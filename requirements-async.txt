@@ -1,0 +1,41 @@
+# Restaurant AI - Async Multi-Restaurant Requirements
+
+# Core async web framework
+aiohttp==3.9.1
+aiohttp-cors==0.7.0
+
+# Database
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Redis caching
+redis[hiredis]==5.0.1  # Using redis with async support instead of deprecated aioredis
+
+# AI APIs
+openai==1.6.1
+groq==0.4.0
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# JSON handling
+ujson==5.9.0
+
+# Logging
+colorlog==6.8.0
+
+# Production server
+gunicorn==21.2.0
+uvloop==0.19.0
+
+# Monitoring (optional)
+prometheus-client==0.19.0
+# aiohttp-prometheus==0.2.4  # Removed - not available for this version
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-aiohttp==1.0.5
+
+# Development
+aiohttp-devtools==1.1.0

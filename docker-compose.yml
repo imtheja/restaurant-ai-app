@@ -1,0 +1,94 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: restaurant_ai_postgres
+    environment:
+      POSTGRES_DB: restaurant_ai
+      POSTGRES_USER: restaurant_user
+      POSTGRES_PASSWORD: restaurant_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restaurant_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: restaurant_ai_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # pgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: restaurant_ai_pgadmin
+    platform: linux/amd64  # Explicitly set platform
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@restaurant.ai
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5051:80"  # Changed from 5050 to 5051 to avoid conflict
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  # Redis Commander for Redis management (optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: restaurant_ai_redis_commander
+    platform: linux/amd64  # Explicitly set platform
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8082:8081"  # Changed from 8081 to 8082 to avoid potential conflicts
+    depends_on:
+      - redis
+
+  # Restaurant AI Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.async
+    container_name: restaurant_ai_app
+    environment:
+      DATABASE_URL: postgresql://restaurant_user:restaurant_pass@postgres:5432/restaurant_ai
+      REDIS_URL: redis://redis:6379
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./static:/app/static
+      - ./templates:/app/templates
+    command: python app_async.py
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
+
+networks:
+  default:
+    name: restaurant_ai_network

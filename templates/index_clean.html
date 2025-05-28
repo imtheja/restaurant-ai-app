@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Restaurant - Intelligent Dining Assistant</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style_clean.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">
+                <i class="fas fa-utensils"></i>
+                AI Restaurant
+            </h1>
+            <p class="tagline">Intelligent Dining Experience</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="content-grid">
+                <!-- Menu Section -->
+                <section class="menu-section">
+                    <div class="section-header">
+                        <h2>Our Menu</h2>
+                        <div class="menu-filters">
+                            <button class="filter-btn active" data-category="all">All</button>
+                            <button class="filter-btn" data-category="appetizer">Appetizers</button>
+                            <button class="filter-btn" data-category="main">Main Courses</button>
+                            <button class="filter-btn" data-category="dessert">Desserts</button>
+                        </div>
+                    </div>
+                    
+                    <div class="dietary-filters">
+                        <label class="dietary-filter">
+                            <input type="checkbox" id="vegetarian-filter">
+                            <span>Vegetarian</span>
+                        </label>
+                        <label class="dietary-filter">
+                            <input type="checkbox" id="vegan-filter">
+                            <span>Vegan</span>
+                        </label>
+                        <label class="dietary-filter">
+                            <input type="checkbox" id="gluten-free-filter">
+                            <span>Gluten-Free</span>
+                        </label>
+                    </div>
+                    
+                    <div id="menu-items" class="menu-grid">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading menu...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Assistant Section -->
+                <section class="ai-assistant-section">
+                    <div class="ai-assistant-card">
+                        <div class="ai-assistant-header">
+                            <div class="ai-assistant-avatar" id="ai-avatar">
+                                👩‍💼
+                                <span class="status-indicator" id="ai-status"></span>
+                                <div class="voice-controls" id="voice-controls">
+                                    <button id="voice-btn" class="voice-btn" title="Click to speak">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="ai-assistant-info">
+                                <h3>Sophie</h3>
+                                <p>Your dining companion</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-container">
+                            <div id="chat-messages" class="chat-messages">
+                                <div class="chat-message ai-message">
+                                    <p>Hi! I'm Sophie 😊 What can I help you find today?</p>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input-container">
+                                <input 
+                                    type="text" 
+                                    id="chat-input" 
+                                    class="chat-input" 
+                                    placeholder="Ask about our menu or say what you're craving..."
+                                    autocomplete="off"
+                                >
+                                <button id="send-btn" class="send-btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-questions">
+                            <p>Try asking:</p>
+                            <button class="quick-question" data-question="What do you recommend for someone who's really hungry?">
+                                "I'm really hungry"
+                            </button>
+                            <button class="quick-question" data-question="What healthy options do you have?">
+                                "Healthy options"
+                            </button>
+                            <button class="quick-question" data-question="I want something spicy">
+                                "Something spicy"
+                            </button>
+                            <button class="quick-question" data-question="Tell me about your desserts">
+                                "About desserts"
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 AI Restaurant. Powered by Intelligent Dining Technology</p>
+        </div>
+    </footer>
+
+    <!-- Menu Item Modal -->
+    <div id="menu-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div id="modal-body">
+                <!-- Menu item details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app_clean.js"></script>
+</body>
+</html>
