@@ -22,6 +22,10 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import hashlib
 from urllib.parse import urlparse
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -443,29 +447,42 @@ class RestaurantWebApp:
         
         # Serve restaurant-specific template
         # In production, use a template engine like jinja2
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>{restaurant['name']} - AI Dining Assistant</title>
-            <link rel="stylesheet" href="/static/css/style_clean.css">
-        </head>
-        <body>
-            <div id="restaurant-data" 
-                 data-id="{restaurant['id']}"
-                 data-name="{restaurant['name']}"
-                 data-ai-name="{restaurant.get('ai_name', 'Sophie')}">
-            </div>
-            <script src="/static/js/app_clean.js"></script>
-        </body>
-        </html>
+        # Read the template file
+        template_path = os.path.join(os.path.dirname(__file__), 'templates', 'index_clean.html')
+        with open(template_path, 'r') as f:
+            html = f.read()
+        
+        # Replace restaurant-specific values
+        html = html.replace('AI Restaurant', restaurant['name'])
+        html = html.replace('Sophie', restaurant.get('ai_name', 'Sophie'))
+        
+        # Add restaurant data for JavaScript
+        restaurant_data = f"""
+        <script>
+            window.RESTAURANT_DATA = {{
+                id: "{restaurant['id']}",
+                name: "{restaurant['name']}",
+                ai_name: "{restaurant.get('ai_name', 'Sophie')}",
+                slug: "{restaurant['slug']}"
+            }};
+        </script>
         """
+        
+        # Insert before closing body tag
+        html = html.replace('</body>', f'{restaurant_data}</body>')
         
         return web.Response(text=html, content_type='text/html')
     
     async def handle_menu(self, request):
         """Get restaurant menu"""
         route_type, identifier = self.get_restaurant_from_request(request)
+        
+        # Also check query parameter as fallback
+        if not route_type:
+            restaurant_id = request.query.get('restaurant_id')
+            if restaurant_id:
+                route_type = 'slug'
+                identifier = restaurant_id
         
         if not route_type:
             return web.json_response({'success': False, 'error': 'Restaurant not specified'})
@@ -502,11 +519,25 @@ class RestaurantWebApp:
         """Handle chat messages"""
         route_type, identifier = self.get_restaurant_from_request(request)
         
+        # Also check request body for restaurant_id
+        if not route_type:
+            try:
+                data = await request.json()
+                restaurant_id = data.get('restaurant_id')
+                if restaurant_id:
+                    route_type = 'slug'
+                    identifier = restaurant_id
+                    # Put data back for later use
+                    request['_json_data'] = data
+            except:
+                pass
+        
         if not route_type:
             return web.json_response({'success': False, 'error': 'Restaurant not specified'})
         
         try:
-            data = await request.json()
+            # Use cached data if available
+            data = request.get('_json_data') or await request.json()
             message = data.get('message', '').strip()
             session_id = data.get('session_id', 'anonymous')
             

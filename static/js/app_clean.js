@@ -213,7 +213,9 @@ function stopSpeaking() {
 // Load menu items
 async function loadMenuItems() {
     try {
-        const response = await fetch('/api/menu');
+        // Get restaurant data from window object (set by server)
+        const restaurantId = window.RESTAURANT_DATA?.slug || 'luigi';
+        const response = await fetch(`/api/menu?restaurant_id=${restaurantId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -235,9 +237,18 @@ async function loadMenuItems() {
 // Filter menu items
 function filterMenuItems() {
     AppState.filteredItems = AppState.menuItems.filter(item => {
-        // Category filter
-        if (AppState.currentCategory !== 'all' && item.category !== AppState.currentCategory) {
-            return false;
+        // Category filter with mapping
+        if (AppState.currentCategory !== 'all') {
+            const categoryMap = {
+                'appetizer': 'Appetizers',
+                'main': 'Main Courses',
+                'dessert': 'Desserts',
+                'beverage': 'Beverages'
+            };
+            const expectedCategory = categoryMap[AppState.currentCategory] || AppState.currentCategory;
+            if (item.category !== expectedCategory) {
+                return false;
+            }
         }
         
         // Dietary filters
@@ -264,15 +275,15 @@ function renderMenuItems() {
     }
     
     const html = AppState.filteredItems.map(item => `
-        <div class="menu-item" data-id="${item.id}" onclick="showMenuItem(${item.id})">
+        <div class="menu-item" data-id="${item.id}" onclick="showMenuItem('${item.id}')">
             <div class="menu-item-header">
                 <h3>${item.name}</h3>
                 <span class="menu-item-price">$${item.price.toFixed(2)}</span>
             </div>
             <p class="menu-item-description">${item.description}</p>
             <div class="menu-item-details">
-                <span class="prep-time"><i class="fas fa-clock"></i> ${item.prep_time}</span>
-                <span class="calories"><i class="fas fa-fire"></i> ${item.calories} cal</span>
+                ${item.prep_time ? `<span class="prep-time"><i class="fas fa-clock"></i> ${item.prep_time}</span>` : ''}
+                ${item.calories ? `<span class="calories"><i class="fas fa-fire"></i> ${item.calories} cal</span>` : ''}
             </div>
             <div class="menu-item-tags">
                 ${item.vegetarian ? '<span class="menu-tag vegetarian">Vegetarian</span>' : ''}
@@ -288,7 +299,7 @@ function renderMenuItems() {
 
 // Show menu item details
 function showMenuItem(itemId) {
-    const item = AppState.menuItems.find(i => i.id === itemId);
+    const item = AppState.menuItems.find(i => i.id == itemId || i.id === parseInt(itemId));
     if (!item) return;
     
     const html = `
@@ -357,10 +368,14 @@ async function sendMessage(message) {
     const typingId = showTypingIndicator();
     
     try {
+        const restaurantId = window.RESTAURANT_DATA?.slug || 'luigi';
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ 
+                message: message,
+                restaurant_id: restaurantId 
+            })
         });
         
         const data = await response.json();
